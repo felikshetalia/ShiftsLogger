@@ -6,25 +6,23 @@ public static class SeedData
     {
         context.Database.Migrate();
 
+
+        var rob = new Employee
+        {
+            FirstName = "Rob",
+            LastName = "Truman",
+            Role = "Nurse"
+        };
+
+        var halina = new Employee
+        {
+            FirstName = "Halina",
+            LastName = "Ostapchuk",
+            Role = "Doctor"
+        };
         if (!context.Set<Employee>().Any())
         {
-            var employees = new List<Employee>
-            {
-                new()
-                {
-                    FirstName = "Rob",
-                    LastName = "Truman",
-                    Role = "Nurse"
-                },
-                new()
-                {
-                    FirstName = "Halina",
-                    LastName = "Ostapchuk",
-                    Role = "Doctor"
-                }
-            };
-
-            context.Set<Employee>().AddRange(employees);
+            context.Set<Employee>().AddRange(rob, halina);
             context.SaveChanges();
         }
 
@@ -34,13 +32,13 @@ public static class SeedData
             {
                 new()
                 {
-                    EmployeeId = 1,
+                    Employee = rob,
                     StartTime = new DateTime(2026, 9, 16, 8, 0, 0),
                     EndTime = new DateTime(2026, 9, 16, 16, 0, 0)
                 },
                 new()
                 {
-                    EmployeeId = 2,
+                    Employee = halina,
                     StartTime = new DateTime(2026, 9, 17, 12, 0, 0),
                     EndTime = new DateTime(2026, 9, 17, 20, 0, 0)
                 }
