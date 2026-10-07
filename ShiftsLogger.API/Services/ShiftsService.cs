@@ -8,8 +8,16 @@ public class ShiftsService : IShiftsService
     {
         _shiftsCtx = ctx;
     }
-    public async Task<Shift> CreateAsync(Shift dto)
+    public async Task<Shift?> CreateAsync(Shift dto)
     {
+        var employee = await _shiftsCtx.Employees.FindAsync(dto.EmployeeId);
+
+        if (employee == null || !employee.isActive)
+        {
+            // reject operation
+            Console.WriteLine("Operation denied");
+            return null;
+        }
         var saved = _shiftsCtx.Shifts.Add(dto);
         await _shiftsCtx.SaveChangesAsync();
         return saved.Entity;
@@ -35,11 +43,11 @@ public class ShiftsService : IShiftsService
     public async Task<Shift?> GetByIdAsync(int id)
         => await _shiftsCtx.Shifts.FindAsync(id);
 
-    public async Task<Shift> UpdateAsync(int id, Shift dto)
+    public async Task<Shift?> UpdateAsync(int id, Shift dto)
     {
         var saved = await _shiftsCtx.Shifts.FindAsync(id);
         if (saved == null)
-            return null!;
+            return null;
 
         // _shiftsCtx.Entry(saved).CurrentValues.SetValues(dto);
         saved.EmployeeId = dto.EmployeeId;
