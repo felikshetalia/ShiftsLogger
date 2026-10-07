@@ -4,5 +4,5 @@ public interface IShiftsService
     Task<Shift?> GetByIdAsync(int id);
     Task<Shift> CreateAsync(Shift dto);
     Task<Shift> UpdateAsync(int id, Shift dto);
-    Task DeleteAsync(int id);
+    Task<bool> DeleteAsync(int id);
 }

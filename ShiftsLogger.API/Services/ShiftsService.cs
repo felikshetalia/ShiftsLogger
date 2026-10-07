@@ -15,17 +15,18 @@ public class ShiftsService : IShiftsService
         return saved.Entity;
     }
 
-    public async Task DeleteAsync(int id)
+    public async Task<bool> DeleteAsync(int id)
     {
         var saved = await _shiftsCtx.Shifts.FindAsync(id);
         if (saved == null)
         {
             // throw new NotFound
-            return;
+            return false;
         }
 
         _shiftsCtx.Shifts.Remove(saved);
         await _shiftsCtx.SaveChangesAsync();
+        return true;
     }
 
     public async Task<ICollection<Shift>> GetAllAsync()
@@ -40,7 +41,10 @@ public class ShiftsService : IShiftsService
         if (saved == null)
             return null!;
 
-        _shiftsCtx.Entry(saved).CurrentValues.SetValues(dto);
+        // _shiftsCtx.Entry(saved).CurrentValues.SetValues(dto);
+        saved.EmployeeId = dto.EmployeeId;
+        saved.StartTime = dto.StartTime;
+        saved.EndTime = dto.EndTime;
         await _shiftsCtx.SaveChangesAsync();
 
         return saved;
