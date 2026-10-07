@@ -1,8 +1,8 @@
 public interface IEmployeeService
 {
-    ICollection<Employee> GetAllAsync();
-    Employee? GetByIdAsync(int id);
-    Employee CreateAsync(Employee dto);
-    Employee UpdateAsync(int id, Employee dto);
-    void DeleteAsync(int id);
+    Task<ICollection<Employee>> GetAllAsync();
+    Task<Employee?> GetByIdAsync(int id);
+    Task<Employee> CreateAsync(Employee dto);
+    Task<Employee> UpdateAsync(int id, Employee dto);
+    Task DeleteAsync(int id);
 }

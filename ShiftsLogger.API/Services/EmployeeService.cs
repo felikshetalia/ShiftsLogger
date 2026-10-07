@@ -1,4 +1,6 @@
 
+using Microsoft.EntityFrameworkCore;
+
 public class EmployeeService : IEmployeeService
 {
     private readonly ShiftsLoggerDbContext _shiftsCtx;
@@ -8,37 +10,37 @@ public class EmployeeService : IEmployeeService
         _shiftsCtx = ctx;
     }
 
-    public Employee CreateAsync(Employee dto)
+    public async Task<Employee> CreateAsync(Employee dto)
     {
         var saved = _shiftsCtx.Employees.Add(dto);
-        _shiftsCtx.SaveChanges();
+        await _shiftsCtx.SaveChangesAsync();
         return saved.Entity;
     }
 
-    public void DeleteAsync(int id)
+    public async Task DeleteAsync(int id)
     {
-        var saved = _shiftsCtx.Employees.Find(id);
+        var saved = await _shiftsCtx.Employees.FindAsync(id);
         if (saved == null)
             return;
 
         _shiftsCtx.Employees.Remove(saved);
-        _shiftsCtx.SaveChanges();
+        await _shiftsCtx.SaveChangesAsync();
     }
 
-    public ICollection<Employee> GetAllAsync()
-        => _shiftsCtx.Employees.ToList();
+    public async Task<ICollection<Employee>> GetAllAsync()
+        => await _shiftsCtx.Employees.ToListAsync();
 
-    public Employee? GetByIdAsync(int id)
-        => _shiftsCtx.Employees.Find(id);
+    public async Task<Employee?> GetByIdAsync(int id)
+        => await _shiftsCtx.Employees.FindAsync(id);
 
-    public Employee UpdateAsync(int id, Employee dto)
+    public async Task<Employee> UpdateAsync(int id, Employee dto)
     {
-        var saved = _shiftsCtx.Employees.Find(id);
+        var saved = await _shiftsCtx.Employees.FindAsync(id);
         if (saved == null)
             return null!;
 
         _shiftsCtx.Entry(saved).CurrentValues.SetValues(dto);
-        _shiftsCtx.SaveChanges();
+        await _shiftsCtx.SaveChangesAsync();
         return saved;
     }
 }

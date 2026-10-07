@@ -1,5 +1,5 @@
 
-using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore;
 
 public class ShiftsService : IShiftsService
 {
@@ -8,16 +8,16 @@ public class ShiftsService : IShiftsService
     {
         _shiftsCtx = ctx;
     }
-    public Shift CreateAsync(Shift dto)
+    public async Task<Shift> CreateAsync(Shift dto)
     {
         var saved = _shiftsCtx.Shifts.Add(dto);
-        _shiftsCtx.SaveChanges();
+        await _shiftsCtx.SaveChangesAsync();
         return saved.Entity;
     }
 
-    public void DeleteAsync(int id)
+    public async Task DeleteAsync(int id)
     {
-        var saved = _shiftsCtx.Shifts.Find(id);
+        var saved = await _shiftsCtx.Shifts.FindAsync(id);
         if (saved == null)
         {
             // throw new NotFound
@@ -25,23 +25,23 @@ public class ShiftsService : IShiftsService
         }
 
         _shiftsCtx.Shifts.Remove(saved);
-        _shiftsCtx.SaveChanges();
+        await _shiftsCtx.SaveChangesAsync();
     }
 
-    public ICollection<Shift> GetAllAsync()
-        => _shiftsCtx.Shifts.ToList();
+    public async Task<ICollection<Shift>> GetAllAsync()
+        => await _shiftsCtx.Shifts.ToListAsync();
 
-    public Shift? GetByIdAsync(int id)
-        => _shiftsCtx.Shifts.Find(id);
+    public async Task<Shift?> GetByIdAsync(int id)
+        => await _shiftsCtx.Shifts.FindAsync(id);
 
-    public Shift UpdateAsync(int id, Shift dto)
+    public async Task<Shift> UpdateAsync(int id, Shift dto)
     {
-        var saved = _shiftsCtx.Shifts.Find(id);
+        var saved = await _shiftsCtx.Shifts.FindAsync(id);
         if (saved == null)
             return null!;
 
         _shiftsCtx.Entry(saved).CurrentValues.SetValues(dto);
-        _shiftsCtx.SaveChanges();
+        await _shiftsCtx.SaveChangesAsync();
 
         return saved;
     }

@@ -1,8 +1,8 @@
 public interface IShiftsService
 {
-    ICollection<Shift> GetAllAsync();
-    Shift? GetByIdAsync(int id);
-    Shift CreateAsync(Shift dto);
-    Shift UpdateAsync(int id, Shift dto);
-    void DeleteAsync(int id);
+    Task<ICollection<Shift>> GetAllAsync();
+    Task<Shift?> GetByIdAsync(int id);
+    Task<Shift> CreateAsync(Shift dto);
+    Task<Shift> UpdateAsync(int id, Shift dto);
+    Task DeleteAsync(int id);
 }
