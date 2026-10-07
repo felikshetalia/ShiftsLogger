@@ -10,6 +10,9 @@ public class EmployeeService : IEmployeeService
         _shiftsCtx = ctx;
     }
 
+    public async Task<Employee?> ArchiveAsync(int id)
+        => await SetActiveStatusAsync(id, false);
+
     public async Task<Employee> CreateAsync(Employee dto)
     {
         var saved = _shiftsCtx.Employees.Add(dto);
@@ -34,6 +37,9 @@ public class EmployeeService : IEmployeeService
     public async Task<Employee?> GetByIdAsync(int id)
         => await _shiftsCtx.Employees.FindAsync(id);
 
+    public async Task<Employee?> RestoreAsync(int id)
+        => await SetActiveStatusAsync(id, true);
+
     public async Task<Employee?> UpdateAsync(int id, Employee dto)
     {
         var saved = await _shiftsCtx.Employees.FindAsync(id);
@@ -46,5 +52,17 @@ public class EmployeeService : IEmployeeService
         saved.Role = dto.Role;
         await _shiftsCtx.SaveChangesAsync();
         return saved;
+    }
+
+    private async Task<Employee?> SetActiveStatusAsync(int id, bool isActive)
+    {
+        var employee = await GetByIdAsync(id);
+
+        if (employee == null)
+            return null;
+
+        employee.isActive = isActive;
+        await _shiftsCtx.SaveChangesAsync();
+        return employee;
     }
 }
