@@ -15,7 +15,6 @@ public class ShiftsService : IShiftsService
         if (employee == null || !employee.isActive)
         {
             // reject operation
-            Console.WriteLine("Operation denied");
             return null;
         }
         var saved = _shiftsCtx.Shifts.Add(dto);
