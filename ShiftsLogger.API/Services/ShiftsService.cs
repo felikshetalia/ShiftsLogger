@@ -42,16 +42,21 @@ public class ShiftsService : IShiftsService
     public async Task<Shift?> GetByIdAsync(int id)
         => await _shiftsCtx.Shifts.FindAsync(id);
 
-    public async Task<Shift?> UpdateAsync(int id, Shift dto)
+    public async Task<Shift?> UpdateAsync(int id, Shift newData)
     {
         var saved = await _shiftsCtx.Shifts.FindAsync(id);
         if (saved == null)
             return null;
 
+        var employee = await _shiftsCtx.Employees.FindAsync(newData.EmployeeId);
+
+        if (employee == null || !employee.isActive)
+            return null;
+
         // _shiftsCtx.Entry(saved).CurrentValues.SetValues(dto);
-        saved.EmployeeId = dto.EmployeeId;
-        saved.StartTime = dto.StartTime;
-        saved.EndTime = dto.EndTime;
+        saved.EmployeeId = newData.EmployeeId;
+        saved.StartTime = newData.StartTime;
+        saved.EndTime = newData.EndTime;
         await _shiftsCtx.SaveChangesAsync();
 
         return saved;

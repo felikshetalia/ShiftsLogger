@@ -1,4 +1,5 @@
-public class UpdateShiftDTO
+[ValidShiftTimeRange]
+public class UpdateShiftDTO : IShiftTimeRange
 {
     public int EmployeeID { get; set; }
     public DateTime StartTime { get; set; }
