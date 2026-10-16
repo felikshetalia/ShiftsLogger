@@ -27,7 +27,8 @@ public sealed class ShiftsView
             .AddColumn("ID")
             .AddColumn("Employee ID")
             .AddColumn("Start time")
-            .AddColumn("End time");
+            .AddColumn("End time")
+            .AddColumn("Duration");
 
         foreach (var shift in shifts.OrderBy(shift => shift.Id))
         {
@@ -35,7 +36,8 @@ public sealed class ShiftsView
                 shift.Id.ToString(CultureInfo.InvariantCulture),
                 shift.EmployeeId.ToString(CultureInfo.InvariantCulture),
                 shift.StartTime.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture),
-                shift.EndTime.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture));
+                shift.EndTime.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture),
+                shift.Duration.ToString(@"hh\:mm", CultureInfo.InvariantCulture));
         }
 
         AnsiConsole.Write(table);
