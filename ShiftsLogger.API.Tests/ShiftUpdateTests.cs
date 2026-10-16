@@ -1,0 +1,116 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+
+namespace ShiftsLogger.API.Tests;
+
+[TestFixture]
+public sealed class ShiftUpdateTests
+{
+    private SqliteConnection _connection = null!;
+    private ShiftsLoggerDbContext _dbContext = null!;
+    private ShiftsService _shiftsService = null!;
+    private ShiftsController _controller = null!;
+
+    [SetUp]
+    public async Task SetUp()
+    {
+        _connection = new SqliteConnection("Data Source=:memory:");
+        await _connection.OpenAsync();
+
+        var options = new DbContextOptionsBuilder<ShiftsLoggerDbContext>()
+            .UseSqlite(_connection)
+            .Options;
+        _dbContext = new ShiftsLoggerDbContext(options);
+        await _dbContext.Database.EnsureCreatedAsync();
+
+        _shiftsService = new ShiftsService(_dbContext);
+        _controller = new ShiftsController(_shiftsService);
+    }
+
+    [TearDown]
+    public async Task TearDown()
+    {
+        await _dbContext.DisposeAsync();
+        await _connection.DisposeAsync();
+    }
+
+    [Test]
+    public async Task Update_WithUnchangedInactiveEmployee_DoesNotRejectExistingAssignment()
+    {
+        var employee = await AddEmployeeAsync(isActive: false);
+        var shift = await AddShiftAsync(employee.Id);
+
+        var result = await _controller.Update(shift.Id, new UpdateShiftDTO
+        {
+            EmployeeID = employee.Id,
+            StartTime = shift.StartTime.AddHours(1),
+            EndTime = shift.EndTime.AddHours(1)
+        });
+
+        Assert.That(result.Result, Is.TypeOf<OkObjectResult>());
+        Assert.That(shift.StartTime, Is.EqualTo(new DateTime(2026, 10, 16, 9, 0, 0)));
+    }
+
+    [Test]
+    public async Task Update_WithInvalidReassignment_ReturnsBadRequest()
+    {
+        var assignedEmployee = await AddEmployeeAsync(isActive: true);
+        var inactiveEmployee = await AddEmployeeAsync(isActive: false);
+        var shift = await AddShiftAsync(assignedEmployee.Id);
+
+        var result = await _controller.Update(shift.Id, new UpdateShiftDTO
+        {
+            EmployeeID = inactiveEmployee.Id,
+            StartTime = shift.StartTime,
+            EndTime = shift.EndTime
+        });
+
+        Assert.That(result.Result, Is.TypeOf<BadRequestObjectResult>());
+        Assert.That(shift.EmployeeId, Is.EqualTo(assignedEmployee.Id));
+    }
+
+    [Test]
+    public async Task Update_WhenShiftDoesNotExist_ReturnsNotFound()
+    {
+        var inactiveEmployee = await AddEmployeeAsync(isActive: false);
+
+        var result = await _controller.Update(999, new UpdateShiftDTO
+        {
+            EmployeeID = inactiveEmployee.Id,
+            StartTime = new DateTime(2026, 10, 16, 8, 0, 0),
+            EndTime = new DateTime(2026, 10, 16, 16, 0, 0)
+        });
+
+        Assert.That(result.Result, Is.TypeOf<NotFoundResult>());
+    }
+
+    private async Task<Employee> AddEmployeeAsync(bool isActive)
+    {
+        var employee = new Employee
+        {
+            FirstName = "Test",
+            LastName = "Employee",
+            Role = "Tester",
+            isActive = isActive
+        };
+
+        _dbContext.Employees.Add(employee);
+        await _dbContext.SaveChangesAsync();
+        return employee;
+    }
+
+    private async Task<Shift> AddShiftAsync(int employeeId)
+    {
+        var shift = new Shift
+        {
+            EmployeeId = employeeId,
+            StartTime = new DateTime(2026, 10, 16, 8, 0, 0),
+            EndTime = new DateTime(2026, 10, 16, 16, 0, 0)
+        };
+
+        _dbContext.Shifts.Add(shift);
+        await _dbContext.SaveChangesAsync();
+        return shift;
+    }
+}

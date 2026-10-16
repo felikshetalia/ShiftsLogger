@@ -5,4 +5,5 @@ public class Shift
     public Employee Employee { get; set; } = null!;
     public DateTime StartTime { get; set; }
     public DateTime EndTime { get; set; }
+    // public double DurationHours { get; set; }
 }

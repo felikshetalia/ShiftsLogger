@@ -53,8 +53,16 @@ public class ShiftsController : ControllerBase
             EndTime = dto.EndTime
         };
 
-        var updatedShift = await _shiftsService.UpdateAsync(id, shift);
-        return updatedShift is null ? NotFound() : Ok(ToResponse(updatedShift));
+        var updateResult = await _shiftsService.UpdateAsync(id, shift);
+        return updateResult.Status switch
+        {
+            ShiftUpdateStatus.Updated when updateResult.Shift is not null
+                => Ok(ToResponse(updateResult.Shift)),
+            ShiftUpdateStatus.ShiftNotFound => NotFound(),
+            ShiftUpdateStatus.InvalidEmployeeAssignment
+                => BadRequest("The shift cannot be reassigned to an employee that does not exist or is inactive."),
+            _ => throw new InvalidOperationException("The shift update returned an invalid result.")
+        };
     }
 
     [HttpDelete("{id:int}")]
