@@ -82,10 +82,10 @@ public sealed class ShiftsView
                 "Enter the shift end time (yyyy-MM-dd HH:mm):",
                 currentShift?.EndTime);
 
-            if (startTime <= endTime)
+            if (startTime < endTime)
                 return new ShiftWriteRequest(employeeId, startTime, endTime);
 
-            AnsiConsole.MarkupLine("[red]Start time must not be later than end time. Please enter both times again.[/]");
+            AnsiConsole.MarkupLine("[red]Start time must be earlier than end time. Please enter both times again.[/]");
         }
     }
 
