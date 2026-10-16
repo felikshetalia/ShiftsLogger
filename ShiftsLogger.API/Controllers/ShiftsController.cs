@@ -12,18 +12,21 @@ public class ShiftsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<ICollection<Shift>>> GetAll()
-        => Ok(await _shiftsService.GetAllAsync());
+    public async Task<ActionResult<ICollection<ShiftResponse>>> GetAll()
+    {
+        var shifts = await _shiftsService.GetAllAsync();
+        return Ok(shifts.Select(ToResponse).ToList());
+    }
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<Shift>> GetById(int id)
+    public async Task<ActionResult<ShiftResponse>> GetById(int id)
     {
         var shift = await _shiftsService.GetByIdAsync(id);
-        return shift is null ? NotFound() : Ok(shift);
+        return shift is null ? NotFound() : Ok(ToResponse(shift));
     }
 
     [HttpPost]
-    public async Task<ActionResult<Shift>> Create(CreateShiftDTO dto)
+    public async Task<ActionResult<ShiftResponse>> Create(CreateShiftDTO dto)
     {
         var shift = new Shift
         {
@@ -36,11 +39,12 @@ public class ShiftsController : ControllerBase
         if (createdShift is null)
             return BadRequest("The employee does not exist or is not active.");
 
-        return CreatedAtAction(nameof(GetById), new { id = createdShift.Id }, createdShift);
+        var response = ToResponse(createdShift);
+        return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);
     }
 
     [HttpPut("{id:int}")]
-    public async Task<ActionResult<Shift>> Update(int id, UpdateShiftDTO dto)
+    public async Task<ActionResult<ShiftResponse>> Update(int id, UpdateShiftDTO dto)
     {
         var shift = new Shift
         {
@@ -50,7 +54,7 @@ public class ShiftsController : ControllerBase
         };
 
         var updatedShift = await _shiftsService.UpdateAsync(id, shift);
-        return updatedShift is null ? NotFound() : Ok(updatedShift);
+        return updatedShift is null ? NotFound() : Ok(ToResponse(updatedShift));
     }
 
     [HttpDelete("{id:int}")]
@@ -59,4 +63,7 @@ public class ShiftsController : ControllerBase
         var deleted = await _shiftsService.DeleteAsync(id);
         return deleted ? NoContent() : NotFound();
     }
+
+    private static ShiftResponse ToResponse(Shift shift)
+        => new(shift.Id, shift.EmployeeId, shift.StartTime, shift.EndTime);
 }

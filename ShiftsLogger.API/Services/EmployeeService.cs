@@ -40,7 +40,7 @@ public class EmployeeService : IEmployeeService
     public async Task<Employee?> RestoreAsync(int id)
         => await SetActiveStatusAsync(id, true);
 
-    public async Task<Employee?> UpdateAsync(int id, Employee dto)
+    public async Task<Employee?> UpdateAsync(int id, Employee dto, bool? isActive = null)
     {
         var saved = await _shiftsCtx.Employees.FindAsync(id);
         if (saved == null)
@@ -50,6 +50,8 @@ public class EmployeeService : IEmployeeService
         saved.FirstName = dto.FirstName;
         saved.LastName = dto.LastName;
         saved.Role = dto.Role;
+        if (isActive.HasValue)
+            saved.isActive = isActive.Value;
         await _shiftsCtx.SaveChangesAsync();
         return saved;
     }

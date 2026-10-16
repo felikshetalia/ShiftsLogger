@@ -46,7 +46,7 @@ public class EmployeesController : ControllerBase
             Role = dto.Role
         };
 
-        var updatedEmployee = await _employeeService.UpdateAsync(id, employee);
+        var updatedEmployee = await _employeeService.UpdateAsync(id, employee, dto.IsActive);
         return updatedEmployee is null ? NotFound() : Ok(updatedEmployee);
     }
 
