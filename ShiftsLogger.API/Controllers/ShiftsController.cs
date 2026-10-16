@@ -73,5 +73,13 @@ public class ShiftsController : ControllerBase
     }
 
     private static ShiftResponse ToResponse(Shift shift)
-        => new(shift.Id, shift.EmployeeId, shift.StartTime, shift.EndTime);
+        => new(
+            shift.Id,
+            shift.EmployeeId,
+            shift.StartTime,
+            shift.EndTime,
+            new ShiftEmployeeResponse(
+                shift.Employee.FirstName,
+                shift.Employee.LastName,
+                shift.Employee.Role));
 }

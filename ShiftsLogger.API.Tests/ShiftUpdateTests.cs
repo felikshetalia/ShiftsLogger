@@ -85,6 +85,25 @@ public sealed class ShiftUpdateTests
         Assert.That(result.Result, Is.TypeOf<NotFoundResult>());
     }
 
+    [Test]
+    public async Task GetAll_IncludesEmployeeDetailsInShiftResponse()
+    {
+        var employee = await AddEmployeeAsync(isActive: true);
+        employee.FirstName = "Casey";
+        employee.LastName = "Taylor";
+        employee.Role = "Manager";
+        await _dbContext.SaveChangesAsync();
+        await AddShiftAsync(employee.Id);
+
+        var result = await _controller.GetAll();
+        var response = result.Result as OkObjectResult;
+        var shifts = response?.Value as ICollection<ShiftResponse>;
+
+        Assert.That(shifts, Has.Count.EqualTo(1));
+        Assert.That(shifts!.Single().Employee, Is.EqualTo(
+            new ShiftEmployeeResponse("Casey", "Taylor", "Manager")));
+    }
+
     private async Task<Employee> AddEmployeeAsync(bool isActive)
     {
         var employee = new Employee

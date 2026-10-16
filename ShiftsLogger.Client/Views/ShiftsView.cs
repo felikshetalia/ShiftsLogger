@@ -25,7 +25,7 @@ public sealed class ShiftsView
         var table = new Table()
             .Border(TableBorder.Rounded)
             .AddColumn("ID")
-            .AddColumn("Employee ID")
+            .AddColumn("Employee")
             .AddColumn("Start time")
             .AddColumn("End time")
             .AddColumn("Duration");
@@ -34,7 +34,7 @@ public sealed class ShiftsView
         {
             table.AddRow(
                 shift.Id.ToString(CultureInfo.InvariantCulture),
-                shift.EmployeeId.ToString(CultureInfo.InvariantCulture),
+                $"{Markup.Escape(shift.Employee.FirstName)} {Markup.Escape(shift.Employee.LastName)} ({Markup.Escape(shift.Employee.Role)})",
                 shift.StartTime.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture),
                 shift.EndTime.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture),
                 shift.Duration.ToString(@"hh\:mm", CultureInfo.InvariantCulture));
