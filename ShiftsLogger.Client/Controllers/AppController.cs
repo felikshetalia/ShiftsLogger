@@ -3,12 +3,20 @@ namespace ShiftsLogger.Client;
 public sealed class AppController
 {
     private readonly IAppView _appView;
-    public AppController(IAppView view)
+    private readonly ShiftsController _shiftsController;
+    private readonly EmployeesController _employeesController;
+
+    public AppController(
+        IAppView view,
+        ShiftsController shiftsController,
+        EmployeesController employeesController)
     {
         _appView = view;
+        _shiftsController = shiftsController;
+        _employeesController = employeesController;
     }
 
-    public async Task Run()
+    public async Task RunAsync()
     {
         bool isRunning = true;
 
@@ -18,7 +26,8 @@ public sealed class AppController
 
             switch (selectedOption)
             {
-                case MainMenuOption.EnterShift:
+                case MainMenuOption.EnterPortal:
+                    await EnterPortalAsync();
                     break;
 
                 case MainMenuOption.Exit:
@@ -33,5 +42,33 @@ public sealed class AppController
             }
         }
         _appView.DisplayGoodbye();
+    }
+
+    private async Task EnterPortalAsync()
+    {
+        bool isInPortal = true;
+
+        while (isInPortal)
+        {
+            switch (_appView.DisplayPortalMenu())
+            {
+                case PortalMenuOption.Shifts:
+                    await _shiftsController.RunAsync();
+                    break;
+
+                case PortalMenuOption.Employees:
+                    await _employeesController.RunAsync();
+                    break;
+
+                case PortalMenuOption.Back:
+                    isInPortal = false;
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(
+                        nameof(PortalMenuOption),
+                        "Unknown portal menu option.");
+            }
+        }
     }
 }

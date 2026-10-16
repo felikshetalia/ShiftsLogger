@@ -1,5 +1,5 @@
 public enum MainMenuOption
 {
-    EnterShift,
+    EnterPortal,
     Exit
 }

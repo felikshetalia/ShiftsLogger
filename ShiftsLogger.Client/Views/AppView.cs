@@ -10,9 +10,25 @@ public class AppView : IAppView
         AnsiConsole.Clear();
         return AnsiConsole.Prompt(
             new SelectionPrompt<MainMenuOption>()
-                .Title("[green]Welcome to JFK Public Hospital Employee Tracking System[/]")
+                .Title("[green]Shifts Logger[/]")
                 .AddChoices(Enum.GetValues<MainMenuOption>())
                 .UseConverter(FormatMenuOption));
+    }
+
+    public PortalMenuOption DisplayPortalMenu()
+    {
+        AnsiConsole.Clear();
+        return AnsiConsole.Prompt(
+            new SelectionPrompt<PortalMenuOption>()
+                .Title("[green]Enter portal[/]")
+                .AddChoices(Enum.GetValues<PortalMenuOption>())
+                .UseConverter(option => option switch
+                {
+                    PortalMenuOption.Shifts => "Shifts",
+                    PortalMenuOption.Employees => "Employees",
+                    PortalMenuOption.Back => "Back",
+                    _ => option.ToString()
+                }));
     }
 
     public void DisplayMessage(string message)
@@ -28,7 +44,7 @@ public class AppView : IAppView
     {
         return option switch
         {
-            MainMenuOption.EnterShift => "Log shift",
+            MainMenuOption.EnterPortal => "Enter portal",
             MainMenuOption.Exit => "Exit",
             _ => option.ToString()
         };
