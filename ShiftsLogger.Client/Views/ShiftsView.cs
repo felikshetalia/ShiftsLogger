@@ -60,18 +60,12 @@ public sealed class ShiftsView
         if (currentShift is not null)
         {
             AnsiConsole.MarkupLine(
-                "[grey]Current values are pre-filled. Press Enter to keep a value, or edit it.[/]");
+                "[grey]Current values are shown. Type a space and press Enter to keep a value, or enter a replacement.[/]");
         }
 
         var employeeId = currentShift is null
             ? PromptEmployeeId()
-            : AnsiConsole.Prompt(
-                new TextPrompt<int>("Enter the employee ID:")
-                    .DefaultValue(currentShift.EmployeeId)
-                    .EditableDefaultValue(true)
-                    .Validate(id => id > 0
-                        ? ValidationResult.Success()
-                        : ValidationResult.Error("The ID must be greater than zero.")));
+            : PromptEmployeeId(currentShift.EmployeeId);
 
         while (true)
         {
@@ -89,12 +83,31 @@ public sealed class ShiftsView
         }
     }
 
-    private static int PromptEmployeeId()
-        => AnsiConsole.Prompt(
+    private static int PromptEmployeeId(int? currentValue = null)
+    {
+        if (currentValue.HasValue)
+        {
+            var input = AnsiConsole.Prompt(
+                new TextPrompt<string>(
+                        $"Employee ID (current: {currentValue.Value}) (space + Enter to keep):")
+                    .AllowEmpty()
+                    .Validate(value =>
+                        string.IsNullOrWhiteSpace(value)
+                        || int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var id) && id > 0
+                            ? ValidationResult.Success()
+                            : ValidationResult.Error("Enter an ID greater than zero, or a space to keep the current ID.")));
+
+            return string.IsNullOrWhiteSpace(input)
+                ? currentValue.Value
+                : int.Parse(input, NumberStyles.Integer, CultureInfo.InvariantCulture);
+        }
+
+        return AnsiConsole.Prompt(
             new TextPrompt<int>("Enter the employee ID:")
                 .Validate(id => id > 0
                     ? ValidationResult.Success()
                     : ValidationResult.Error("The ID must be greater than zero.")));
+    }
 
     public void DisplayMessage(string message)
         => AnsiConsole.MarkupLine(Markup.Escape(message));
@@ -109,14 +122,12 @@ public sealed class ShiftsView
     {
         while (true)
         {
-            var textPrompt = new TextPrompt<string>(prompt);
+            var promptText = currentValue.HasValue
+                ? $"{prompt} (current: {currentValue.Value.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)}) (space + Enter to keep):"
+                : prompt;
+            var textPrompt = new TextPrompt<string>(promptText);
             if (currentValue.HasValue)
-            {
-                textPrompt
-                    .DefaultValue(currentValue.Value.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture))
-                    .EditableDefaultValue(true)
-                    .AllowEmpty();
-            }
+                textPrompt.AllowEmpty();
 
             var input = AnsiConsole.Prompt(textPrompt);
             if (string.IsNullOrWhiteSpace(input) && currentValue.HasValue)
