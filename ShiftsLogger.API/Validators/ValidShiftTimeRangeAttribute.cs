@@ -11,7 +11,7 @@ public sealed class ValidShiftTimeRangeAttribute : ValidationAttribute
                 $"{nameof(ValidShiftTimeRangeAttribute)} can only be applied to types implementing {nameof(IShiftTimeRange)}.");
         }
 
-        if (shift.StartTime <= shift.EndTime)
+        if (shift.StartTime < shift.EndTime)
             return ValidationResult.Success;
 
         return new ValidationResult(

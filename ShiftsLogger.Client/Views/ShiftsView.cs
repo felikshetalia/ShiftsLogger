@@ -57,35 +57,7 @@ public sealed class ShiftsView
                     ? ValidationResult.Success()
                     : ValidationResult.Error("The ID must be greater than zero.")));
 
-    public ShiftWriteRequest PromptShiftDetails(ClientShift? currentShift = null)
-    {
-        if (currentShift is not null)
-        {
-            AnsiConsole.MarkupLine(
-                "[grey]Current values are shown. Type a space and press Enter to keep a value, or enter a replacement.[/]");
-        }
-
-        var employeeId = currentShift is null
-            ? PromptEmployeeId()
-            : PromptEmployeeId(currentShift.EmployeeId);
-
-        while (true)
-        {
-            var startTime = PromptDateTime(
-                "Enter the shift start time (yyyy-MM-dd HH:mm):",
-                currentShift?.StartTime);
-            var endTime = PromptDateTime(
-                "Enter the shift end time (yyyy-MM-dd HH:mm):",
-                currentShift?.EndTime);
-
-            if (startTime < endTime)
-                return new ShiftWriteRequest(employeeId, startTime, endTime);
-
-            AnsiConsole.MarkupLine("[red]Start time must be earlier than end time. Please enter both times again.[/]");
-        }
-    }
-
-    private static int PromptEmployeeId(int? currentValue = null)
+    public int PromptEmployeeId(int? currentValue = null)
     {
         if (currentValue.HasValue)
         {
@@ -109,6 +81,30 @@ public sealed class ShiftsView
                 .Validate(id => id > 0
                     ? ValidationResult.Success()
                     : ValidationResult.Error("The ID must be greater than zero.")));
+    }
+
+    public ShiftWriteRequest PromptShiftTimes(int employeeId, ClientShift? currentShift = null)
+    {
+        if (currentShift is not null)
+        {
+            AnsiConsole.MarkupLine(
+                "[grey]Current times are shown. Type a space and press Enter to keep a value, or enter a replacement.[/]");
+        }
+
+        while (true)
+        {
+            var startTime = PromptDateTime(
+                "Enter the shift start time (yyyy-MM-dd HH:mm):",
+                currentShift?.StartTime);
+            var endTime = PromptDateTime(
+                "Enter the shift end time (yyyy-MM-dd HH:mm):",
+                currentShift?.EndTime);
+
+            if (startTime < endTime)
+                return new ShiftWriteRequest(employeeId, startTime, endTime);
+
+            AnsiConsole.MarkupLine("[red]Start time must be earlier than end time. Please enter both times again.[/]");
+        }
     }
 
     public void DisplayMessage(string message)

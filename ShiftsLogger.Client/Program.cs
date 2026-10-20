@@ -22,7 +22,10 @@ class Program
             IAppView appView = new AppView();
             IShiftsService shiftsService = new ShiftsService(httpClient);
             IEmployeesService employeesService = new EmployeesService(httpClient);
-            var shiftsController = new ShiftsController(shiftsService, new ShiftsView());
+            var shiftsController = new ShiftsController(
+                shiftsService,
+                employeesService,
+                new ShiftsView());
             var employeesController = new EmployeesController(employeesService, new EmployeesView());
             var mainApp = new AppController(appView, shiftsController, employeesController);
 

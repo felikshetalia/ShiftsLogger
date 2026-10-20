@@ -46,7 +46,10 @@ internal static class ApiResponse
                 ? $"The API returned {status}."
                 : $"The API returned {status}: {detail}";
 
-            throw new ApiClientException($"Could not {operation}. {message}");
+            throw new ApiClientException(
+                $"Could not {operation}. {message}",
+                statusCode: response.StatusCode,
+                responseDetail: detail);
         }
     }
 
@@ -131,7 +134,7 @@ internal static class ApiResponse
         }
         catch (JsonException)
         {
-            return null;
+            return FormatDetail(body);
         }
     }
 

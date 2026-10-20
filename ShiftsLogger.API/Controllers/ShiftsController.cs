@@ -37,7 +37,7 @@ public class ShiftsController : ControllerBase
 
         var createdShift = await _shiftsService.CreateAsync(shift);
         if (createdShift is null)
-            return BadRequest("The employee does not exist or is not active.");
+            return BadRequest("Cannot assign shift: the employee does not exist or is inactive.");
 
         var response = ToResponse(createdShift);
         return CreatedAtAction(nameof(GetById), new { id = response.Id }, response);

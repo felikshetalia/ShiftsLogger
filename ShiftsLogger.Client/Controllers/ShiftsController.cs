@@ -1,11 +1,19 @@
+using System.Net;
+
 public sealed class ShiftsController
 {
     private readonly IShiftsService _shiftsService;
+    private readonly IEmployeesService _employeesService;
     private readonly ShiftsView _view;
+    private string? _pendingMessage;
 
-    public ShiftsController(IShiftsService shiftsService, ShiftsView view)
+    public ShiftsController(
+        IShiftsService shiftsService,
+        IEmployeesService employeesService,
+        ShiftsView view)
     {
         _shiftsService = shiftsService;
+        _employeesService = employeesService;
         _view = view;
     }
 
@@ -26,6 +34,12 @@ public sealed class ShiftsController
             }
 
             _view.DisplayShifts(shifts);
+            if (_pendingMessage is not null)
+            {
+                _view.DisplayMessage(_pendingMessage);
+                _pendingMessage = null;
+            }
+
             switch (_view.DisplayManagementMenu())
             {
                 case ManagementMenuOption.Add:
@@ -53,7 +67,11 @@ public sealed class ShiftsController
 
     private async Task AddAsync()
     {
-        var request = _view.PromptShiftDetails();
+        var employeeId = _view.PromptEmployeeId();
+        if (!await IsEmployeeAssignableAsync(employeeId))
+            return;
+
+        var request = _view.PromptShiftTimes(employeeId);
         await RunOperationAsync(
             () => _shiftsService.CreateAsync(request),
             "Shift created.");
@@ -74,7 +92,11 @@ public sealed class ShiftsController
             return;
         }
 
-        var request = _view.PromptShiftDetails(shift);
+        var employeeId = _view.PromptEmployeeId(shift.EmployeeId);
+        if (employeeId != shift.EmployeeId && !await IsEmployeeAssignableAsync(employeeId))
+            return;
+
+        var request = _view.PromptShiftTimes(employeeId, shift);
         await RunOperationAsync(
             () => _shiftsService.UpdateAsync(id, request),
             "Shift updated.");
@@ -97,9 +119,36 @@ public sealed class ShiftsController
         }
         catch (ApiClientException exception)
         {
-            _view.DisplayMessage(exception.Message);
+            _pendingMessage = exception.StatusCode == HttpStatusCode.BadRequest
+                && exception.ResponseDetail?.Contains("Cannot assign shift", StringComparison.OrdinalIgnoreCase) == true
+                    ? exception.ResponseDetail
+                    : exception.Message;
         }
 
-        _view.WaitForInput();
+        if (_pendingMessage is null)
+            _view.WaitForInput();
+    }
+
+    private async Task<bool> IsEmployeeAssignableAsync(int employeeId)
+    {
+        try
+        {
+            var employee = await _employeesService.GetByIdAsync(employeeId);
+            if (employee.IsActive)
+                return true;
+
+            _pendingMessage = "The employee is not active. Cannot assign shift.";
+            return false;
+        }
+        catch (ApiClientException exception) when (exception.StatusCode == HttpStatusCode.NotFound)
+        {
+            _pendingMessage = $"Employee {employeeId} was not found. Enter an existing active employee.";
+            return false;
+        }
+        catch (ApiClientException exception)
+        {
+            _pendingMessage = exception.Message;
+            return false;
+        }
     }
 }
