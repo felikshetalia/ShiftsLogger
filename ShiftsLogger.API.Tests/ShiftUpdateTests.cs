@@ -1,38 +1,18 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
 
 namespace ShiftsLogger.API.Tests;
 
 [TestFixture]
-public sealed class ShiftUpdateTests
+public sealed class ShiftUpdateTests : ApiControllerTestBase
 {
-    private SqliteConnection _connection = null!;
-    private ShiftsLoggerDbContext _dbContext = null!;
     private ShiftsService _shiftsService = null!;
     private ShiftsController _controller = null!;
 
     [SetUp]
-    public async Task SetUp()
+    public void SetUpServices()
     {
-        _connection = new SqliteConnection("Data Source=:memory:");
-        await _connection.OpenAsync();
-
-        var options = new DbContextOptionsBuilder<ShiftsLoggerDbContext>()
-            .UseSqlite(_connection)
-            .Options;
-        _dbContext = new ShiftsLoggerDbContext(options);
-        await _dbContext.Database.EnsureCreatedAsync();
-
-        _shiftsService = new ShiftsService(_dbContext);
+        _shiftsService = new ShiftsService(DbContext);
         _controller = new ShiftsController(_shiftsService);
-    }
-
-    [TearDown]
-    public async Task TearDown()
-    {
-        await _dbContext.DisposeAsync();
-        await _connection.DisposeAsync();
     }
 
     [Test]
@@ -92,7 +72,7 @@ public sealed class ShiftUpdateTests
         employee.FirstName = "Casey";
         employee.LastName = "Taylor";
         employee.Role = "Manager";
-        await _dbContext.SaveChangesAsync();
+        await DbContext.SaveChangesAsync();
         await AddShiftAsync(employee.Id);
 
         var result = await _controller.GetAll();
@@ -102,34 +82,5 @@ public sealed class ShiftUpdateTests
         Assert.That(shifts, Has.Count.EqualTo(1));
         Assert.That(shifts!.Single().Employee, Is.EqualTo(
             new ShiftEmployeeResponse("Casey", "Taylor", "Manager")));
-    }
-
-    private async Task<Employee> AddEmployeeAsync(bool isActive)
-    {
-        var employee = new Employee
-        {
-            FirstName = "Test",
-            LastName = "Employee",
-            Role = "Tester",
-            isActive = isActive
-        };
-
-        _dbContext.Employees.Add(employee);
-        await _dbContext.SaveChangesAsync();
-        return employee;
-    }
-
-    private async Task<Shift> AddShiftAsync(int employeeId)
-    {
-        var shift = new Shift
-        {
-            EmployeeId = employeeId,
-            StartTime = new DateTime(2026, 10, 16, 8, 0, 0),
-            EndTime = new DateTime(2026, 10, 16, 16, 0, 0)
-        };
-
-        _dbContext.Shifts.Add(shift);
-        await _dbContext.SaveChangesAsync();
-        return shift;
     }
 }
